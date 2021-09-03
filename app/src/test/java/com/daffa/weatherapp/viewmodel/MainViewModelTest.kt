@@ -23,20 +23,10 @@ class MainViewModelTest {
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private lateinit var mainViewModel: MainViewModel
-    private lateinit var repository: MainRepository
-    private val mainThreadSurrogate = newSingleThreadContext("UI thread")
 
     @Before
     fun setUp() {
         mainViewModel = MainViewModel()
-        repository = MainRepository(ApiConfig.provideApiService())
-        Dispatchers.setMain(mainThreadSurrogate)
-    }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain() // reset main dispatcher to the original Main dispatcher
-        mainThreadSurrogate.close()
     }
 
     @ExperimentalCoroutinesApi
@@ -52,11 +42,5 @@ class MainViewModelTest {
             assertNotNull(data.main.humidity)
             assertNotNull(data.weather[0].main)
         }
-    }
-
-    @Test
-    fun weatherRepository() = runBlocking {
-        val data = repository.getWeatherData()
-        assertEquals("Bekasi", data.name)
     }
 }
