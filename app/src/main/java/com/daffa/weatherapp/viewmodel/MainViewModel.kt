@@ -21,7 +21,7 @@ class MainViewModel(
         getWeatherData()
     }
 
-    private fun getWeatherData() {
+    fun getWeatherData() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val client = mainRepository.getWeatherData()
