@@ -14,8 +14,9 @@ import kotlin.concurrent.schedule
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var viewModel: MainViewModel
-
+    private val viewModel: MainViewModel by lazy {
+        ViewModelProvider(this).get(MainViewModel::class.java)
+    }
     private var reload = Timer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.refreshSwipe.setOnRefreshListener {
             weatherResult()
-            reload.schedule(3000L) {
+            reload.schedule(300L) {
                 binding.refreshSwipe.isRefreshing = false
             }
         }
@@ -35,10 +36,6 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun weatherResult() {
-        viewModel = ViewModelProvider(
-            this,
-            ViewModelProvider.NewInstanceFactory()
-        )[MainViewModel::class.java]
 
         viewModel.weather.observe(this, {
             binding.apply {
@@ -47,9 +44,9 @@ class MainActivity : AppCompatActivity() {
                     (it.main.temp / 10).toInt().toString()
                 )
                 maxTemp.text =
-                    String.format(getString(R.string.temp), it.main.tempMax.toString())
+                    String.format(getString(R.string.temp), it.main.tempMax.toInt().toString())
                 minTemp.text =
-                    String.format(getString(R.string.temp), it.main.tempMin.toString())
+                    String.format(getString(R.string.temp), it.main.tempMin.toInt().toString())
                 address.text = it.name
                 statusWeather.text = it.weather[0].main
                 tvWind.text = it.wind.speed.toString()
@@ -66,7 +63,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SimpleDateFormat")
     private fun updateTime() {
         val calendar = Calendar.getInstance()
-        val simpleFormat = SimpleDateFormat("EEEE, dd LLLL yyyy HH:mm:ss aaa z")
+        val simpleFormat = SimpleDateFormat("EEEE, dd LLLL yyyy HH:mmaaa z")
         val date = simpleFormat.format(calendar.time).toString()
         binding.timeUpdate.text = date
     }

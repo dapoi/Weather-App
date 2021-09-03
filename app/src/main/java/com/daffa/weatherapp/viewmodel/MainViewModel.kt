@@ -3,14 +3,17 @@ package com.daffa.weatherapp.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.daffa.weatherapp.data.MainRepository
 import com.daffa.weatherapp.data.remote.model.CurrentWeatherResponse
 import com.daffa.weatherapp.data.remote.network.ApiConfig
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class MainViewModel : ViewModel() {
+class MainViewModel(
+    private val mainRepository: MainRepository = MainRepository(ApiConfig.provideApiService())
+) : ViewModel() {
     private val _currentWeather = MutableLiveData<CurrentWeatherResponse>()
     var weather: LiveData<CurrentWeatherResponse> = _currentWeather
 
@@ -19,24 +22,14 @@ class MainViewModel : ViewModel() {
     }
 
     private fun getWeatherData() {
-        val weather = ApiConfig.provideApiService().getWeather()
-        weather.enqueue(object : Callback<CurrentWeatherResponse> {
-            override fun onResponse(
-                call: Call<CurrentWeatherResponse>,
-                response: Response<CurrentWeatherResponse>
-            ) {
-                if (response.isSuccessful) {
-                    _currentWeather.value = response.body()
-                    Timber.d("onSuccess" + response.message())
-                } else {
-                    Timber.e("onFailure: " + response.message())
-                }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val client = mainRepository.getWeatherData()
+                _currentWeather.postValue(client)
+                Timber.d("onSuccess $client")
+            } catch (e: Exception) {
+                Timber.e("onFailure: " + e.message.toString())
             }
-
-            override fun onFailure(call: Call<CurrentWeatherResponse>, t: Throwable) {
-                Timber.e("onFailure: " + t.message.toString())
-            }
-
-        })
+        }
     }
 }
