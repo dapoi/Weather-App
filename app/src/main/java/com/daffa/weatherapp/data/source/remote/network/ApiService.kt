@@ -1,6 +1,6 @@
-package com.daffa.weatherapp.data.remote.network
+package com.daffa.weatherapp.data.source.remote.network
 
-import com.daffa.weatherapp.data.remote.model.CurrentWeatherResponse
+import com.daffa.weatherapp.data.source.remote.model.CurrentWeatherResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
